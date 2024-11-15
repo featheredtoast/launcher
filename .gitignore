@@ -1,0 +1,6 @@
+shared/*
+*.swp
+*~
+\#*\#
+bin/*
+tmp/*
