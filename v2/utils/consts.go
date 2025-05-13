@@ -7,10 +7,9 @@ import (
 	"time"
 )
 
-const Version = "v2.0.4"
+const Version = "v2.0.5"
 
 const DefaultNamespace = "local_discourse"
-const DefaultBaseImage = "discourse/base:release"
 
 // Known secrets, or otherwise not public info from config so we can build public images
 var KnownSecrets = []string{
