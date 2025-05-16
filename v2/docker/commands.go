@@ -39,11 +39,9 @@ func (r *DockerBuilder) Run() error {
 	cmd.Dir = r.Dir
 	cmd.Env = os.Environ()
 	env := r.Config.EnvArray(false)
-	for _, e := range env {
-		cmd.Env = append(cmd.Env, e)
-	}
+	cmd.Env = append(cmd.Env, env...)
 	cmd.Env = append(cmd.Env, "BUILDKIT_PROGRESS=plain")
-	for k, _ := range r.Config.Env {
+	for k := range r.Config.Env {
 		cmd.Args = append(cmd.Args, "--build-arg")
 		cmd.Args = append(cmd.Args, k)
 	}
@@ -92,7 +90,9 @@ func (r *DockerRunner) Run() error {
 			if runtime.GOOS == "darwin" {
 				runCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				stopCmd := exec.CommandContext(runCtx, utils.DockerPath, "stop", r.ContainerId)
-				utils.CmdRunner(stopCmd).Run()
+				if err := utils.CmdRunner(stopCmd).Run(); err != nil {
+					fmt.Fprintln(utils.Out, "Error stopping container"+r.ContainerId) //nolint:errcheck
+				}
 				cancel()
 			}
 			return unix.Kill(-cmd.Process.Pid, unix.SIGINT)
@@ -101,9 +101,7 @@ func (r *DockerRunner) Run() error {
 
 	cmd.Env = os.Environ()
 	env := r.Config.EnvArray(true)
-	for _, e := range env {
-		cmd.Env = append(cmd.Env, e)
-	}
+	cmd.Env = append(cmd.Env, env...)
 	envKeys := make([]string, 0, len(r.Config.Env))
 
 	for envKey := range r.Config.Env {
@@ -181,13 +179,8 @@ func (r *DockerRunner) Run() error {
 	cmd.Args = append(cmd.Args, "--interactive")
 
 	// Docker args override settings above
-	for _, f := range r.Config.DockerArgs() {
-		cmd.Args = append(cmd.Args, f)
-	}
-
-	for _, f := range r.ExtraFlags {
-		cmd.Args = append(cmd.Args, f)
-	}
+	cmd.Args = append(cmd.Args, r.Config.DockerArgs()...)
+	cmd.Args = append(cmd.Args, r.ExtraFlags...)
 
 	if r.Hostname != "" {
 		cmd.Args = append(cmd.Args, "--hostname")
@@ -203,9 +196,7 @@ func (r *DockerRunner) Run() error {
 		cmd.Args = append(cmd.Args, r.Config.RunImage())
 	}
 
-	for _, c := range r.Cmd {
-		cmd.Args = append(cmd.Args, c)
-	}
+	cmd.Args = append(cmd.Args, r.Cmd...)
 
 	if !r.Detatch {
 		cmd.Stdout = os.Stdout
@@ -249,7 +240,9 @@ func (r *DockerPupsRunner) Run() error {
 			time.Sleep(utils.CommitWait)
 			runCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			cmd := exec.CommandContext(runCtx, utils.DockerPath, "rm", "--force", r.ContainerId)
-			utils.CmdRunner(cmd).Run()
+			if err := utils.CmdRunner(cmd).Run(); err != nil {
+				fmt.Fprintln(utils.Out, "Error stopping container"+r.ContainerId) //nolint:errcheck
+			}
 			cancel()
 		}
 	}(rm)
@@ -291,7 +284,7 @@ func (r *DockerPupsRunner) Run() error {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		fmt.Fprintln(utils.Out, cmd)
+		fmt.Fprintln(utils.Out, cmd) //nolint:errcheck
 
 		if err := utils.CmdRunner(cmd).Run(); err != nil {
 			return err

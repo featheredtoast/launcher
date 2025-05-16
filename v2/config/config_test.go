@@ -17,7 +17,7 @@ var _ = Describe("Config", func() {
 		conf, _ = config.LoadConfig("../test/containers", "test", true, "../test")
 	})
 	AfterEach(func() {
-		os.RemoveAll(testDir)
+		os.RemoveAll(testDir) //nolint:errcheck
 	})
 	It("should be able to run LoadConfig to load yaml configuration", func() {
 		conf, err := config.LoadConfig("../test/containers", "test", true, "../test")
@@ -61,6 +61,6 @@ var _ = Describe("Config", func() {
 	It("should error if no base config LoadConfig to load yaml configuration", func() {
 		_, err := config.LoadConfig("../test/containers", "test-no-base-image", true, "../test")
 		Expect(err).ToNot(BeNil())
-		Expect(err.Error()).To(Equal("No base image specified in config! Set base image with `base_image: {imagename}`"))
+		Expect(err.Error()).To(Equal("no base image specified in config! set base image with `base_image: {imagename}`"))
 	})
 })

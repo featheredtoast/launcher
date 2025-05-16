@@ -17,30 +17,30 @@ import (
 const defaultBootCommand = "/sbin/boot"
 
 type Config struct {
-	Name            string `yaml:-`
+	Name            string `yaml:"-"`
 	rawYaml         []string
-	Base_Image      string            `yaml:,omitempty`
-	Update_Pups     bool              `yaml:,omitempty`
-	Run_Image       string            `yaml:,omitempty`
-	Boot_Command    string            `yaml:,omitempty`
-	No_Boot_Command bool              `yaml:,omitempty`
-	Docker_Args     string            `yaml:,omitempty`
-	Templates       []string          `yaml:templates,omitempty`
-	Expose          []string          `yaml:expose,omitempty`
-	Env             map[string]string `yaml:env,omitempty`
-	Labels          map[string]string `yaml:labels,omitempty`
+	Base_Image      string            `yaml:",omitempty"`
+	Update_Pups     bool              `yaml:",omitempty"`
+	Run_Image       string            `yaml:",omitempty"`
+	Boot_Command    string            `yaml:",omitempty"`
+	No_Boot_Command bool              `yaml:",omitempty"`
+	Docker_Args     string            `yaml:",omitempty"`
+	Templates       []string          `yaml:"templates,omitempty"`
+	Expose          []string          `yaml:"expose,omitempty"`
+	Env             map[string]string `yaml:"env,omitempty"`
+	Labels          map[string]string `yaml:"labels,omitempty"`
 	Volumes         []struct {
 		Volume struct {
-			Host  string `yaml:host`
-			Guest string `yaml:guest`
-		} `yaml:volume`
-	} `yaml:volumes,omitempty`
+			Host  string `yaml:"host"`
+			Guest string `yaml:"guest"`
+		} `yaml:"volume"`
+	} `yaml:"volumes,omitempty"`
 	Links []struct {
 		Link struct {
-			Name  string `yaml:name`
-			Alias string `yaml:alias`
-		} `yaml:link`
-	} `yaml:links,omitempty`
+			Name  string `yaml:"name"`
+			Alias string `yaml:"alias"`
+		} `yaml:"link"`
+	} `yaml:"links,omitempty"`
 }
 
 func (config *Config) loadTemplate(templateDir string, template string) error {
@@ -122,7 +122,7 @@ func LoadConfig(dir string, configName string, includeTemplates bool, templatesD
 	}
 
 	if config.Base_Image == "" {
-		return nil, errors.New("No base image specified in config! Set base image with `base_image: {imagename}`")
+		return nil, errors.New("no base image specified in config! set base image with `base_image: {imagename}`")
 	}
 
 	return config, nil
@@ -185,7 +185,7 @@ func (config *Config) DockerArgs() []string {
 
 func (config *Config) dockerfileEnvs() string {
 	builder := []string{}
-	for k, _ := range config.Env {
+	for k := range config.Env {
 		builder = append(builder, "ENV "+k+"=${"+k+"}")
 	}
 	slices.Sort(builder)
@@ -194,7 +194,7 @@ func (config *Config) dockerfileEnvs() string {
 
 func (config *Config) dockerfileArgs() string {
 	builder := []string{}
-	for k, _ := range config.Env {
+	for k := range config.Env {
 		builder = append(builder, "ARG "+k)
 	}
 	slices.Sort(builder)

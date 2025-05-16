@@ -29,7 +29,7 @@ type DockerBuildCmd struct {
 func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
 	config, err := config.LoadConfig(cli.ConfDir, r.Config, true, cli.TemplatesDir)
 	if err != nil {
-		return errors.New("YAML syntax error. Please check your containers/*.yml config files.")
+		return errors.New("YAML syntax error. Please check your containers/*.yml config files")
 	}
 
 	dir := cli.BuildDir + "/" + r.Config
@@ -57,7 +57,9 @@ func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
 		return err
 	}
 	cleaner := CleanCmd{Config: r.Config}
-	cleaner.Run(cli)
+	if err := cleaner.Run(cli); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -72,7 +74,7 @@ func (r *DockerConfigureCmd) Run(cli *Cli, ctx *context.Context) error {
 	config, err := config.LoadConfig(cli.ConfDir, r.Config, true, cli.TemplatesDir)
 
 	if err != nil {
-		return errors.New("YAML syntax error. Please check your containers/*.yml config files.")
+		return errors.New("YAML syntax error. Please check your containers/*.yml config files")
 	}
 
 	var uuidString string
@@ -119,7 +121,7 @@ type DockerMigrateCmd struct {
 func (r *DockerMigrateCmd) Run(cli *Cli, ctx *context.Context) error {
 	config, err := config.LoadConfig(cli.ConfDir, r.Config, true, cli.TemplatesDir)
 	if err != nil {
-		return errors.New("YAML syntax error. Please check your containers/*.yml config files.")
+		return errors.New("YAML syntax error. Please check your containers/*.yml config files")
 	}
 	containerId := "discourse-build-" + uuid.NewString()
 	env := []string{"SKIP_EMBER_CLI_COMPILE=1"}
@@ -172,7 +174,7 @@ type CleanCmd struct {
 
 func (r *CleanCmd) Run(cli *Cli) error {
 	dir := cli.BuildDir + "/" + r.Config
-	os.Remove(dir + "/config.yaml")
+	os.Remove(dir + "/config.yaml") //nolint:errcheck
 	if err := os.Remove(dir); err != nil {
 		return err
 	}

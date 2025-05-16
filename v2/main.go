@@ -65,7 +65,7 @@ func main() {
 	go func() {
 		select {
 		case <-sigChan:
-			fmt.Fprintln(utils.Out, "Command interrupted")
+			fmt.Fprintln(utils.Out, "Command interrupted") //nolint:errcheck
 			cancel()
 		case <-done:
 		}
@@ -79,7 +79,7 @@ func main() {
 		if exiterr.ExitCode() == 77 {
 			os.Exit(77)
 		} else if runCtx.Err() != nil {
-			fmt.Fprintln(utils.Out, "Aborted with exit code", exiterr.ExitCode())
+			fmt.Fprintln(utils.Out, "Aborted with exit code", exiterr.ExitCode()) //nolint:errcheck
 		} else {
 			ctx.Fatalf(
 				"run failed with exit code %v\n"+
