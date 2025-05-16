@@ -49,7 +49,7 @@ var _ = Describe("Commands", func() {
 			})
 			AfterEach(func() {
 				os.Unsetenv("launcher_test") //nolint:errcheck
-				os.RemoveAll(testDir) //nolint:errcheck
+				os.RemoveAll(testDir)        //nolint:errcheck
 			})
 			It("Inherits environment for docker build", func() {
 				runner := docker.DockerBuilder{Config: conf, Ctx: &ctx, Stdin: nil, Dir: testDir, Namespace: "test", ImageTag: "test"}
