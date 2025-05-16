@@ -10,6 +10,7 @@ import (
 	"github.com/discourse/launcher/v2/docker"
 	. "github.com/discourse/launcher/v2/test_utils"
 	"github.com/discourse/launcher/v2/utils"
+	"os"
 	"strings"
 )
 
@@ -38,6 +39,30 @@ var _ = Describe("Commands", func() {
 			Expect(strings.HasSuffix(cmd.String(), ":")).To(BeFalse())
 			cmd = GetLastCommand()
 			Expect(cmd.String()).To(ContainSubstring("docker rm"))
+		})
+
+		Context("With environment var set", func() {
+			var testDir string
+			BeforeEach(func() {
+				os.Setenv("launcher_test", "testval")
+				testDir, _ = os.MkdirTemp("", "ddocker-test")
+			})
+			AfterEach(func() {
+				os.Unsetenv("launcher_test")
+				os.RemoveAll(testDir)
+			})
+			It("Inherits environment for docker build", func() {
+				runner := docker.DockerBuilder{Config: conf, Ctx: &ctx, Stdin: nil, Dir: testDir, Namespace: "test", ImageTag: "test"}
+				runner.Run()
+				cmd := GetLastCommand()
+				Expect(cmd.Env).To(ContainElement("launcher_test=testval"))
+			})
+			It("Inherits environment for docker run", func() {
+				runner := docker.DockerRunner{Config: conf, Ctx: &ctx, Stdin: nil}
+				runner.Run()
+				cmd := GetLastCommand()
+				Expect(cmd.Env).To(ContainElement("launcher_test=testval"))
+			})
 		})
 	})
 })

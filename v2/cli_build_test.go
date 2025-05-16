@@ -109,7 +109,7 @@ var _ = Describe("Build", func() {
 					"local_discourse/test /bin/bash -c /usr/local/bin/pups --stdin --tags=db,precompile",
 			))
 
-			Expect(cmd.Env).To(Equal([]string{
+			Expect(cmd.Env).To(ContainElements(
 				"DISCOURSE_DB_HOST=data",
 				"DISCOURSE_DB_PASSWORD=SOME_SECRET",
 				"DISCOURSE_DB_PORT=",
@@ -131,7 +131,7 @@ var _ = Describe("Build", func() {
 				"RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR=1.5",
 				"UNICORN_SIDEKIQS=1",
 				"UNICORN_WORKERS=3",
-			}))
+			))
 
 			buf := new(strings.Builder)
 			io.Copy(buf, cmd.Stdin)
