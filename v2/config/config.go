@@ -65,7 +65,7 @@ func (config *Config) loadTemplate(templateDir string, template string) error {
 
 func LoadConfig(dir string, configName string, includeTemplates bool, templatesDir string) (*Config, error) {
 	config := &Config{
-		Name:         configName,
+		Name:        configName,
 		BootCommand: defaultBootCommand,
 	}
 
