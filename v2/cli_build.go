@@ -36,9 +36,6 @@ func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
 	if dir == "" {
 		dir, _ = os.MkdirTemp("", "launcher") //nolint:errcheck
 	}
-	if err := os.MkdirAll(dir, 0755); err != nil && !os.IsExist(err) {
-		return err
-	}
 	if err := config.WriteYamlConfig(dir); err != nil {
 		return err
 	}
