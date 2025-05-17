@@ -32,6 +32,9 @@ func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
 		return errors.New("YAML syntax error. Please check your containers/*.yml config files")
 	}
 
+	if cli.BuildDir == "" {
+		cli.BuildDir, _ = os.MkdirTemp("", "launcher") //nolint:errcheck
+	}
 	dir := cli.BuildDir + "/" + r.Config
 	if err := os.MkdirAll(dir, 0755); err != nil && !os.IsExist(err) {
 		return err
@@ -56,11 +59,6 @@ func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
 	if err := builder.Run(); err != nil {
 		return err
 	}
-	cleaner := CleanCmd{Config: r.Config}
-	if err := cleaner.Run(cli); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -163,19 +161,6 @@ func (r *DockerBootstrapCmd) Run(cli *Cli, ctx *context.Context) error {
 		return err
 	}
 	if err := configureStep.Run(cli, ctx); err != nil {
-		return err
-	}
-	return nil
-}
-
-type CleanCmd struct {
-	Config string `arg:"" name:"config" help:"config to clean" predictor:"config"`
-}
-
-func (r *CleanCmd) Run(cli *Cli) error {
-	dir := cli.BuildDir + "/" + r.Config
-	os.Remove(dir + "/config.yaml") //nolint:errcheck
-	if err := os.Remove(dir); err != nil {
 		return err
 	}
 	return nil
