@@ -94,7 +94,7 @@ func (r *StartCmd) Run(cli *Cli, ctx *context.Context) error {
 
 	defaultHostname, _ := os.Hostname()
 	defaultHostname = defaultHostname + "-" + r.Config
-	hostname := config.DockerHostname(defaultHostname)
+	hostname := config.GetDockerHostname(defaultHostname)
 
 	restart := true
 	detatch := true
@@ -105,7 +105,7 @@ func (r *StartCmd) Run(cli *Cli, ctx *context.Context) error {
 	}
 
 	extraFlags := strings.Fields(r.DockerArgs)
-	bootCmd := config.BootCommand()
+	bootCmd := config.GetBootCommand()
 
 	runner := docker.DockerRunner{
 		Config:      config,

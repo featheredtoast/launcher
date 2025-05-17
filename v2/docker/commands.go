@@ -38,7 +38,7 @@ func (r *DockerBuilder) Run() error {
 	}
 	cmd.Dir = r.Dir
 	cmd.Env = os.Environ()
-	env := r.Config.EnvArray(false)
+	env := r.Config.GetEnvSlice(false)
 	cmd.Env = append(cmd.Env, env...)
 	cmd.Env = append(cmd.Env, "BUILDKIT_PROGRESS=plain")
 	for k := range r.Config.Env {
@@ -100,7 +100,7 @@ func (r *DockerRunner) Run() error {
 	}
 
 	cmd.Env = os.Environ()
-	env := r.Config.EnvArray(true)
+	env := r.Config.GetEnvSlice(true)
 	cmd.Env = append(cmd.Env, env...)
 	envKeys := make([]string, 0, len(r.Config.Env))
 
@@ -179,7 +179,7 @@ func (r *DockerRunner) Run() error {
 	cmd.Args = append(cmd.Args, "--interactive")
 
 	// Docker args override settings above
-	cmd.Args = append(cmd.Args, r.Config.DockerArgs()...)
+	cmd.Args = append(cmd.Args, r.Config.GetDockerArgs()...)
 	cmd.Args = append(cmd.Args, r.ExtraFlags...)
 
 	if r.Hostname != "" {
@@ -193,7 +193,7 @@ func (r *DockerRunner) Run() error {
 	if len(r.CustomImage) > 0 {
 		cmd.Args = append(cmd.Args, r.CustomImage)
 	} else {
-		cmd.Args = append(cmd.Args, r.Config.RunImage())
+		cmd.Args = append(cmd.Args, r.Config.GetRunImage())
 	}
 
 	cmd.Args = append(cmd.Args, r.Cmd...)
@@ -276,7 +276,7 @@ func (r *DockerPupsRunner) Run() error {
 			"--change",
 			"LABEL org.opencontainers.image.created=\""+time.Now().UTC().Format(time.RFC3339)+"\"",
 			"--change",
-			"CMD [\""+r.Config.BootCommand()+"\"]",
+			"CMD [\""+r.Config.GetBootCommand()+"\"]",
 			r.ContainerId,
 			r.SavedImageName,
 		)

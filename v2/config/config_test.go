@@ -47,15 +47,15 @@ var _ = Describe("Config", func() {
 	Context("hostname tests", func() {
 		It("replaces hostname", func() {
 			config := config.Config{Env: map[string]string{"DOCKER_USE_HOSTNAME": "true", "DISCOURSE_HOSTNAME": "asdfASDF"}}
-			Expect(config.DockerHostname("")).To(Equal("asdfASDF"))
+			Expect(config.GetDockerHostname("")).To(Equal("asdfASDF"))
 		})
 		It("replaces hostname", func() {
 			config := config.Config{Env: map[string]string{"DOCKER_USE_HOSTNAME": "true", "DISCOURSE_HOSTNAME": "asdf!@#$%^&*()ASDF"}}
-			Expect(config.DockerHostname("")).To(Equal("asdf----------ASDF"))
+			Expect(config.GetDockerHostname("")).To(Equal("asdf----------ASDF"))
 		})
 		It("replaces a default hostnamehostname", func() {
 			config := config.Config{}
-			Expect(config.DockerHostname("asdf!@#")).To(Equal("asdf---"))
+			Expect(config.GetDockerHostname("asdf!@#")).To(Equal("asdf---"))
 		})
 	})
 	It("should error if no base config LoadConfig to load yaml configuration", func() {
