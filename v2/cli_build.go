@@ -59,6 +59,7 @@ func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
 	if err := builder.Run(); err != nil {
 		return err
 	}
+	os.RemoveAll(cli.BuildDir) //nolint:errcheck
 	return nil
 }
 

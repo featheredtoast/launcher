@@ -39,10 +39,6 @@ var _ = Describe("Build", func() {
 		utils.CmdRunner = CreateNewFakeCmdRunner()
 	})
 
-	AfterEach(func() {
-		os.RemoveAll(testDir) //nolint:errcheck
-	})
-
 	Context("When running build commands", func() {
 		var checkBuildCmd = func(cmd exec.Cmd) {
 			Expect(cmd.String()).To(ContainSubstring("docker build"))
@@ -58,6 +54,10 @@ var _ = Describe("Build", func() {
 			Expect(buf.String()).To(ContainSubstring("COPY config.yaml /temp-config.yaml"))
 			Expect(buf.String()).To(ContainSubstring("--skip-tags=precompile,migrate,db"))
 			Expect(buf.String()).ToNot(ContainSubstring("SKIP_EMBER_CLI_COMPILE=1"))
+
+			// Ensure we clean up the temp dir after building
+				_, err := os.Stat(testDir)
+				Expect(err).To(MatchError(os.IsNotExist, "IsNotExist"))
 		}
 
 		var checkMigrateCmd = func(cmd exec.Cmd) {

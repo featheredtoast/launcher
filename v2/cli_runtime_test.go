@@ -35,10 +35,6 @@ var _ = Describe("Runtime", func() {
 		utils.CmdRunner = CreateNewFakeCmdRunner()
 	})
 
-	AfterEach(func() {
-		os.RemoveAll(testDir) //nolint:errcheck
-	})
-
 	Context("When running run commands", func() {
 		var checkStartCmd = func() {
 			Expect(len(RanCmds)).To(Equal(3))
@@ -197,6 +193,10 @@ var _ = Describe("Runtime", func() {
 				cmd = GetLastCommand()
 				Expect(cmd.String()).To(ContainSubstring("docker ps --quiet"))
 				Expect(len(RanCmds)).To(Equal(0))
+
+				// Ensure we clean up the temp dir after building
+				_, err := os.Stat(testDir)
+				Expect(err).To(MatchError(os.IsNotExist, "IsNotExist"))
 			})
 		})
 
