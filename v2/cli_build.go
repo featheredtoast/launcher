@@ -32,10 +32,10 @@ func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
 		return errors.New("YAML syntax error. Please check your containers/*.yml config files")
 	}
 
-	if cli.BuildDir == "" {
-		cli.BuildDir, _ = os.MkdirTemp("", "launcher") //nolint:errcheck
+	dir := cli.BuildDir
+	if dir == "" {
+		dir, _ = os.MkdirTemp("", "launcher") //nolint:errcheck
 	}
-	dir := cli.BuildDir + "/" + r.Config
 	if err := os.MkdirAll(dir, 0755); err != nil && !os.IsExist(err) {
 		return err
 	}
@@ -59,7 +59,7 @@ func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
 	if err := builder.Run(); err != nil {
 		return err
 	}
-	os.RemoveAll(cli.BuildDir) //nolint:errcheck
+	os.RemoveAll(dir) //nolint:errcheck
 	return nil
 }
 

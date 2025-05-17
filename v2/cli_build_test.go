@@ -43,7 +43,7 @@ var _ = Describe("Build", func() {
 		var checkBuildCmd = func(cmd exec.Cmd) {
 			Expect(cmd.String()).To(ContainSubstring("docker build"))
 			Expect(cmd.String()).To(ContainSubstring("--build-arg DISCOURSE_DEVELOPER_EMAILS"))
-			Expect(cmd.Dir).To(Equal(testDir + "/test"))
+			Expect(cmd.Dir).To(Equal(testDir))
 
 			//db password is ignored
 			Expect(cmd.Env).ToNot(ContainElement("DISCOURSE_DB_PASSWORD=SOME_SECRET"))
