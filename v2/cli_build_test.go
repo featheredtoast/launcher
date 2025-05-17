@@ -56,8 +56,8 @@ var _ = Describe("Build", func() {
 			Expect(buf.String()).ToNot(ContainSubstring("SKIP_EMBER_CLI_COMPILE=1"))
 
 			// Ensure we clean up the temp dir after building
-				_, err := os.Stat(testDir)
-				Expect(err).To(MatchError(os.IsNotExist, "IsNotExist"))
+			_, err := os.Stat(testDir)
+			Expect(err).To(MatchError(os.IsNotExist, "IsNotExist"))
 		}
 
 		var checkMigrateCmd = func(cmd exec.Cmd) {
