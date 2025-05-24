@@ -20,18 +20,17 @@ import (
 
 type DockerBuilder struct {
 	Config    *config.Config
-	Ctx       *context.Context
 	Stdin     io.Reader
 	Dir       string
 	Namespace string
 	ImageTag  string
 }
 
-func (r *DockerBuilder) Run() error {
+func (r *DockerBuilder) Run(ctx context.Context) error {
 	if r.ImageTag == "" {
 		r.ImageTag = "latest"
 	}
-	cmd := exec.CommandContext(*r.Ctx, utils.DockerPath, "build")
+	cmd := exec.CommandContext(ctx, utils.DockerPath, "build")
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Cancel = func() error {
 		return unix.Kill(-cmd.Process.Pid, unix.SIGINT)
@@ -65,7 +64,6 @@ func (r *DockerBuilder) Run() error {
 
 type DockerRunner struct {
 	Config      *config.Config
-	Ctx         *context.Context
 	ExtraEnv    []string
 	ExtraFlags  []string
 	Rm          bool
@@ -80,8 +78,8 @@ type DockerRunner struct {
 	Hostname    string
 }
 
-func (r *DockerRunner) Run() error {
-	cmd := exec.CommandContext(*r.Ctx, utils.DockerPath, "run")
+func (r *DockerRunner) Run(ctx context.Context) error {
+	cmd := exec.CommandContext(ctx, utils.DockerPath, "run")
 
 	// Detatch signifies we do not want to supervise
 	if !r.Detatch {
@@ -224,11 +222,10 @@ type DockerPupsRunner struct {
 	FromImageName  string
 	SavedImageName string
 	ExtraEnv       []string
-	Ctx            *context.Context
 	ContainerId    string
 }
 
-func (r *DockerPupsRunner) Run() error {
+func (r *DockerPupsRunner) Run(ctx context.Context) error {
 	rm := false
 	// remove : in case docker tag is blank, and use default latest tag
 	r.SavedImageName = strings.TrimRight(r.SavedImageName, ":")
@@ -256,7 +253,6 @@ func (r *DockerPupsRunner) Run() error {
 	}
 
 	runner := DockerRunner{Config: r.Config,
-		Ctx:         r.Ctx,
 		ExtraEnv:    r.ExtraEnv,
 		Rm:          rm,
 		CustomImage: r.FromImageName,
@@ -266,7 +262,7 @@ func (r *DockerPupsRunner) Run() error {
 		SkipPorts:   true, //pups runs don't need to expose ports
 	}
 
-	if err := runner.Run(); err != nil {
+	if err := runner.Run(ctx); err != nil {
 		return err
 	}
 

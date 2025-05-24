@@ -161,14 +161,14 @@ var _ = Describe("Build", func() {
 
 		It("Should run docker build with correct arguments", func() {
 			runner := ddocker.DockerBuildCmd{Config: "test"}
-			runner.Run(cli, &ctx) //nolint:errcheck
+			runner.Run(cli, ctx) //nolint:errcheck
 			Expect(len(RanCmds)).To(Equal(1))
 			checkBuildCmd(RanCmds[0])
 		})
 
 		It("Should run docker migrate with correct arguments", func() {
 			runner := ddocker.DockerMigrateCmd{Config: "test"}
-			runner.Run(cli, &ctx) //nolint:errcheck
+			runner.Run(cli, ctx) //nolint:errcheck
 			Expect(len(RanCmds)).To(Equal(1))
 			checkMigrateCmd(RanCmds[0])
 		})
@@ -180,7 +180,7 @@ var _ = Describe("Build", func() {
 
 			It("Should run docker build with correct namespace and custom flags", func() {
 				runner := ddocker.DockerBuildCmd{Config: "test", Tag: "testtag"}
-				runner.Run(cli, &ctx) //nolint:errcheck
+				runner.Run(cli, ctx) //nolint:errcheck
 				Expect(len(RanCmds)).To(Equal(1))
 				checkBuildCmd(RanCmds[0])
 				Expect(RanCmds[0].String()).To(ContainSubstring("testnamespace/test:testtag"))
@@ -188,7 +188,7 @@ var _ = Describe("Build", func() {
 
 			It("Should run docker configure with correct namespace and tags", func() {
 				runner := ddocker.DockerConfigureCmd{Config: "test", SourceTag: "build", TargetTag: "configure"}
-				runner.Run(cli, &ctx) //nolint:errcheck
+				runner.Run(cli, ctx) //nolint:errcheck
 				Expect(len(RanCmds)).To(Equal(3))
 
 				Expect(RanCmds[0].String()).To(MatchRegexp(
@@ -206,7 +206,7 @@ var _ = Describe("Build", func() {
 
 			It("Should run docker migrate with correct namespace", func() {
 				runner := ddocker.DockerMigrateCmd{Config: "test"}
-				runner.Run(cli, &ctx) //nolint:errcheck
+				runner.Run(cli, ctx) //nolint:errcheck
 				Expect(len(RanCmds)).To(Equal(1))
 				Expect(RanCmds[0].String()).To(ContainSubstring("testnamespace/test "))
 			})
@@ -214,7 +214,7 @@ var _ = Describe("Build", func() {
 
 		It("Should allow skip post deployment migrations", func() {
 			runner := ddocker.DockerMigrateCmd{Config: "test", SkipPostDeploymentMigrations: true}
-			runner.Run(cli, &ctx) //nolint:errcheck
+			runner.Run(cli, ctx) //nolint:errcheck
 			Expect(len(RanCmds)).To(Equal(1))
 			cmd := RanCmds[0]
 			Expect(cmd.String()).To(ContainSubstring("docker run"))
@@ -232,7 +232,7 @@ var _ = Describe("Build", func() {
 
 		It("Should run docker run followed by docker commit and rm container when configuring", func() {
 			runner := ddocker.DockerConfigureCmd{Config: "test"}
-			runner.Run(cli, &ctx) //nolint:errcheck
+			runner.Run(cli, ctx) //nolint:errcheck
 			Expect(len(RanCmds)).To(Equal(3))
 
 			checkConfigureCmd(RanCmds[0])
@@ -242,7 +242,7 @@ var _ = Describe("Build", func() {
 
 		It("Should run all docker commands for full bootstrap", func() {
 			runner := ddocker.DockerBootstrapCmd{Config: "test"}
-			runner.Run(cli, &ctx) //nolint:errcheck
+			runner.Run(cli, ctx) //nolint:errcheck
 			Expect(len(RanCmds)).To(Equal(5))
 			checkBuildCmd(RanCmds[0])
 			checkMigrateCmd(RanCmds[1])

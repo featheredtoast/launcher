@@ -26,7 +26,7 @@ type DockerBuildCmd struct {
 	Config string `arg:"" name:"config" help:"configuration" predictor:"config"`
 }
 
-func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
+func (r *DockerBuildCmd) Run(cli *Cli, ctx context.Context) error {
 	config, err := config.LoadConfig(cli.ConfDir, r.Config, true, cli.TemplatesDir)
 	if err != nil {
 		return errors.New("YAML syntax error. Please check your containers/*.yml config files")
@@ -50,13 +50,12 @@ func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
 	pupsArgs := "--skip-tags=precompile,migrate,db"
 	builder := docker.DockerBuilder{
 		Config:    config,
-		Ctx:       ctx,
 		Stdin:     strings.NewReader(config.Dockerfile(pupsArgs, r.BakeEnv)),
 		Dir:       dir,
 		Namespace: namespace,
 		ImageTag:  r.Tag,
 	}
-	if err := builder.Run(); err != nil {
+	if err := builder.Run(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -68,7 +67,7 @@ type DockerConfigureCmd struct {
 	Config    string `arg:"" name:"config" help:"config" predictor:"config"`
 }
 
-func (r *DockerConfigureCmd) Run(cli *Cli, ctx *context.Context) error {
+func (r *DockerConfigureCmd) Run(cli *Cli, ctx context.Context) error {
 	config, err := config.LoadConfig(cli.ConfDir, r.Config, true, cli.TemplatesDir)
 
 	if err != nil {
@@ -103,11 +102,10 @@ func (r *DockerConfigureCmd) Run(cli *Cli, ctx *context.Context) error {
 		FromImageName:  namespace + "/" + r.Config + sourceTag,
 		SavedImageName: namespace + "/" + r.Config + targetTag,
 		ExtraEnv:       []string{"SKIP_EMBER_CLI_COMPILE=1"},
-		Ctx:            ctx,
 		ContainerId:    containerId,
 	}
 
-	return pups.Run()
+	return pups.Run(ctx)
 }
 
 type DockerMigrateCmd struct {
@@ -116,7 +114,7 @@ type DockerMigrateCmd struct {
 	SkipPostDeploymentMigrations bool   `env:"SKIP_POST_DEPLOYMENT_MIGRATIONS" help:"Skip post-deployment migrations. Runs safe migrations only. Defers breaking-change migrations. Make sure you run post-deployment migrations after a full deploy is complete if you use this option."`
 }
 
-func (r *DockerMigrateCmd) Run(cli *Cli, ctx *context.Context) error {
+func (r *DockerMigrateCmd) Run(cli *Cli, ctx context.Context) error {
 	config, err := config.LoadConfig(cli.ConfDir, r.Config, true, cli.TemplatesDir)
 	if err != nil {
 		return errors.New("YAML syntax error. Please check your containers/*.yml config files")
@@ -140,17 +138,16 @@ func (r *DockerMigrateCmd) Run(cli *Cli, ctx *context.Context) error {
 		PupsArgs:      "--tags=db,migrate",
 		FromImageName: namespace + "/" + r.Config + tag,
 		ExtraEnv:      env,
-		Ctx:           ctx,
 		ContainerId:   containerId,
 	}
-	return pups.Run()
+	return pups.Run(ctx)
 }
 
 type DockerBootstrapCmd struct {
 	Config string `arg:"" name:"config" help:"config" predictor:"config"`
 }
 
-func (r *DockerBootstrapCmd) Run(cli *Cli, ctx *context.Context) error {
+func (r *DockerBootstrapCmd) Run(cli *Cli, ctx context.Context) error {
 	buildStep := DockerBuildCmd{Config: r.Config, BakeEnv: false}
 	migrateStep := DockerMigrateCmd{Config: r.Config}
 	configureStep := DockerConfigureCmd{Config: r.Config}

@@ -41,7 +41,7 @@ type StartCmd struct {
 	extraEnv []string
 }
 
-func (r *StartCmd) Run(cli *Cli, ctx *context.Context) error {
+func (r *StartCmd) Run(cli *Cli, ctx context.Context) error {
 	//start stopped container first if exists
 	running, _ := docker.ContainerRunning(r.Config)
 
@@ -54,7 +54,7 @@ func (r *StartCmd) Run(cli *Cli, ctx *context.Context) error {
 
 	if exists && !r.DryRun {
 		fmt.Fprintln(utils.Out, "starting up existing container") //nolint:errcheck
-		cmd := exec.CommandContext(*ctx, utils.DockerPath, "start", r.Config)
+		cmd := exec.CommandContext(ctx, utils.DockerPath, "start", r.Config)
 
 		if r.Supervised {
 			cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
@@ -111,7 +111,6 @@ func (r *StartCmd) Run(cli *Cli, ctx *context.Context) error {
 
 	runner := docker.DockerRunner{
 		Config:      config,
-		Ctx:         ctx,
 		ContainerId: r.Config,
 		DryRun:      r.DryRun,
 		CustomImage: r.RunImage,
@@ -124,7 +123,7 @@ func (r *StartCmd) Run(cli *Cli, ctx *context.Context) error {
 	}
 
 	fmt.Fprintln(utils.Out, "starting new container...") //nolint:errcheck
-	return runner.Run()
+	return runner.Run(ctx)
 }
 
 type RunCmd struct {
@@ -134,7 +133,7 @@ type RunCmd struct {
 	Cmd        []string `arg:"" help:"command to run" passthrough:""`
 }
 
-func (r *RunCmd) Run(cli *Cli, ctx *context.Context) error {
+func (r *RunCmd) Run(cli *Cli, ctx context.Context) error {
 	config, err := config.LoadConfig(cli.ConfDir, r.Config, true, cli.TemplatesDir)
 	if err != nil {
 		return errors.New("YAML syntax error. Please check your containers/*.yml config files")
@@ -142,27 +141,26 @@ func (r *RunCmd) Run(cli *Cli, ctx *context.Context) error {
 	extraFlags := strings.Fields(r.DockerArgs)
 	runner := docker.DockerRunner{
 		Config:      config,
-		Ctx:         ctx,
 		CustomImage: r.RunImage,
 		SkipPorts:   true,
 		Rm:          true,
 		Cmd:         r.Cmd,
 		ExtraFlags:  extraFlags,
 	}
-	return runner.Run()
+	return runner.Run(ctx)
 }
 
 type StopCmd struct {
 	Config string `arg:"" name:"config" help:"config" predictor:"config"`
 }
 
-func (r *StopCmd) Run(cli *Cli, ctx *context.Context) error {
+func (r *StopCmd) Run(cli *Cli, ctx context.Context) error {
 	exists, _ := docker.ContainerExists(r.Config)
 	if !exists {
 		fmt.Fprintln(utils.Out, r.Config+" was not found") //nolint:errcheck
 		return nil
 	}
-	cmd := exec.CommandContext(*ctx, utils.DockerPath, "stop", "--time", "600", r.Config)
+	cmd := exec.CommandContext(ctx, utils.DockerPath, "stop", "--time", "600", r.Config)
 
 	fmt.Fprintln(utils.Out, cmd) //nolint:errcheck
 	if err := utils.CmdRunner(cmd).Run(); err != nil {
@@ -177,7 +175,7 @@ type RestartCmd struct {
 	RunImage   string `name:"run-image" help:"Override the image used for running the container."`
 }
 
-func (r *RestartCmd) Run(cli *Cli, ctx *context.Context) error {
+func (r *RestartCmd) Run(cli *Cli, ctx context.Context) error {
 	start := StartCmd{Config: r.Config, DockerArgs: r.DockerArgs, RunImage: r.RunImage}
 	stop := StopCmd{Config: r.Config}
 
@@ -196,7 +194,7 @@ type DestroyCmd struct {
 	Config string `arg:"" name:"config" help:"config" predictor:"config"`
 }
 
-func (r *DestroyCmd) Run(cli *Cli, ctx *context.Context) error {
+func (r *DestroyCmd) Run(cli *Cli, ctx context.Context) error {
 	exists, _ := docker.ContainerExists(r.Config)
 
 	if !exists {
@@ -204,14 +202,14 @@ func (r *DestroyCmd) Run(cli *Cli, ctx *context.Context) error {
 		return nil
 	}
 
-	cmd := exec.CommandContext(*ctx, utils.DockerPath, "stop", "--time", "600", r.Config)
+	cmd := exec.CommandContext(ctx, utils.DockerPath, "stop", "--time", "600", r.Config)
 	fmt.Fprintln(utils.Out, cmd) //nolint:errcheck
 
 	if err := utils.CmdRunner(cmd).Run(); err != nil {
 		return err
 	}
 
-	cmd = exec.CommandContext(*ctx, utils.DockerPath, "rm", r.Config)
+	cmd = exec.CommandContext(ctx, utils.DockerPath, "rm", r.Config)
 	fmt.Fprintln(utils.Out, cmd) //nolint:errcheck
 
 	if err := utils.CmdRunner(cmd).Run(); err != nil {
@@ -225,8 +223,8 @@ type EnterCmd struct {
 	Config string `arg:"" name:"config" help:"config" predictor:"config"`
 }
 
-func (r *EnterCmd) Run(cli *Cli, ctx *context.Context) error {
-	cmd := exec.CommandContext(*ctx, utils.DockerPath, "exec", "-it", r.Config, "/bin/bash", "--login")
+func (r *EnterCmd) Run(cli *Cli, ctx context.Context) error {
+	cmd := exec.CommandContext(ctx, utils.DockerPath, "exec", "-it", r.Config, "/bin/bash", "--login")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -242,8 +240,8 @@ type LogsCmd struct {
 	Config string `arg:"" name:"config" help:"config" predictor:"config"`
 }
 
-func (r *LogsCmd) Run(cli *Cli, ctx *context.Context) error {
-	cmd := exec.CommandContext(*ctx, utils.DockerPath, "logs", r.Config)
+func (r *LogsCmd) Run(cli *Cli, ctx context.Context) error {
+	cmd := exec.CommandContext(ctx, utils.DockerPath, "logs", r.Config)
 	output, err := utils.CmdRunner(cmd).Output()
 
 	if err != nil {
@@ -260,7 +258,7 @@ type RebuildCmd struct {
 	Clean     bool   `help:"also runs clean"`
 }
 
-func (r *RebuildCmd) Run(cli *Cli, ctx *context.Context) error {
+func (r *RebuildCmd) Run(cli *Cli, ctx context.Context) error {
 	config, err := config.LoadConfig(cli.ConfDir, r.Config, true, cli.TemplatesDir)
 
 	if err != nil {
@@ -343,14 +341,14 @@ func (r *RebuildCmd) Run(cli *Cli, ctx *context.Context) error {
 
 type CleanupCmd struct{}
 
-func (r *CleanupCmd) Run(cli *Cli, ctx *context.Context) error {
-	cmd := exec.CommandContext(*ctx, utils.DockerPath, "container", "prune", "--filter", "until=1h")
+func (r *CleanupCmd) Run(cli *Cli, ctx context.Context) error {
+	cmd := exec.CommandContext(ctx, utils.DockerPath, "container", "prune", "--filter", "until=1h")
 
 	if err := utils.CmdRunner(cmd).Run(); err != nil {
 		return err
 	}
 
-	cmd = exec.CommandContext(*ctx, utils.DockerPath, "image", "prune", "--all", "--filter", "until=1h")
+	cmd = exec.CommandContext(ctx, utils.DockerPath, "image", "prune", "--all", "--filter", "until=1h")
 
 	if err := utils.CmdRunner(cmd).Run(); err != nil {
 		return err

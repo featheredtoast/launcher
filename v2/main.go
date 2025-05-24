@@ -44,7 +44,7 @@ func main() {
 	// pre parse to get config dir for prediction of conf dir
 	confFiles := utils.FindConfigNames()
 
-	parser := kong.Must(&cli, kong.UsageOnError(), kong.Bind(&runCtx), kong.Vars{"version": utils.Version})
+	parser := kong.Must(&cli, kong.UsageOnError(), kong.Vars{"version": utils.Version})
 
 	// Run kongplete.Complete to handle completion requests
 	kongplete.Complete(parser,
@@ -57,6 +57,7 @@ func main() {
 	parser.FatalIfErrorf(err)
 
 	defer cancel()
+	ctx.BindTo(runCtx, (*context.Context)(nil))
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, unix.SIGTERM)
 	signal.Notify(sigChan, unix.SIGINT)

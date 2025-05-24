@@ -30,8 +30,8 @@ var _ = Describe("Commands", func() {
 			utils.CmdRunner = CreateNewFakeCmdRunner()
 		})
 		It("Removes unspecified image tags on commit", func() {
-			runner := docker.DockerPupsRunner{Config: conf, ContainerId: "123", Ctx: &ctx, SavedImageName: "local_discourse/test:"}
-			runner.Run() //nolint:errcheck
+			runner := docker.DockerPupsRunner{Config: conf, ContainerId: "123", SavedImageName: "local_discourse/test:"}
+			runner.Run(ctx) //nolint:errcheck
 			cmd := GetLastCommand()
 			Expect(cmd.String()).To(ContainSubstring("docker run"))
 			cmd = GetLastCommand()
@@ -52,14 +52,14 @@ var _ = Describe("Commands", func() {
 				os.RemoveAll(testDir)        //nolint:errcheck
 			})
 			It("Inherits environment for docker build", func() {
-				runner := docker.DockerBuilder{Config: conf, Ctx: &ctx, Stdin: nil, Dir: testDir, Namespace: "test", ImageTag: "test"}
-				runner.Run() //nolint:errcheck
+				runner := docker.DockerBuilder{Config: conf, Stdin: nil, Dir: testDir, Namespace: "test", ImageTag: "test"}
+				runner.Run(ctx) //nolint:errcheck
 				cmd := GetLastCommand()
 				Expect(cmd.Env).To(ContainElement("launcher_test=testval"))
 			})
 			It("Inherits environment for docker run", func() {
-				runner := docker.DockerRunner{Config: conf, Ctx: &ctx, Stdin: nil}
-				runner.Run() //nolint:errcheck
+				runner := docker.DockerRunner{Config: conf, Stdin: nil}
+				runner.Run(ctx) //nolint:errcheck
 				cmd := GetLastCommand()
 				Expect(cmd.Env).To(ContainElement("launcher_test=testval"))
 			})
