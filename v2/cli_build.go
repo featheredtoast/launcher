@@ -34,8 +34,11 @@ func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
 
 	dir := cli.BuildDir
 	if dir == "" {
-		dir, _ = os.MkdirTemp("", "launcher") //nolint:errcheck
+		if dir, err = os.MkdirTemp("", "launcher"); err != nil {
+			return errors.New("cannot create temp directory")
+		}
 	}
+	defer os.RemoveAll(dir) //nolint:errcheck
 	if err := config.WriteYamlConfig(dir); err != nil {
 		return err
 	}
@@ -56,7 +59,6 @@ func (r *DockerBuildCmd) Run(cli *Cli, ctx *context.Context) error {
 	if err := builder.Run(); err != nil {
 		return err
 	}
-	os.RemoveAll(dir) //nolint:errcheck
 	return nil
 }
 
