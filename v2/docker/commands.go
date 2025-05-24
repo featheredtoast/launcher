@@ -87,6 +87,8 @@ func (r *DockerRunner) Run() error {
 	if !r.Detatch {
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 		cmd.Cancel = func() error {
+			// MacOS cannot kill a process group using the negative pid.
+			// attempt to stop a container by running docker stop
 			if runtime.GOOS == "darwin" {
 				runCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				stopCmd := exec.CommandContext(runCtx, utils.DockerPath, "stop", r.ContainerId)
