@@ -6,12 +6,13 @@ import (
 
 	"bytes"
 	"context"
+	"os"
+	"strings"
+
 	"github.com/discourse/launcher/v2/config"
 	"github.com/discourse/launcher/v2/docker"
 	. "github.com/discourse/launcher/v2/test_utils"
 	"github.com/discourse/launcher/v2/utils"
-	"os"
-	"strings"
 )
 
 var _ = Describe("Commands", func() {

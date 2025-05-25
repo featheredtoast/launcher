@@ -4,9 +4,10 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/discourse/launcher/v2/config"
 	"os"
 	"strings"
+
+	"github.com/discourse/launcher/v2/config"
 )
 
 var _ = Describe("Config", func() {
