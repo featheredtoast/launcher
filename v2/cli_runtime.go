@@ -248,7 +248,12 @@ func (r *LogsCmd) Run(cli *Cli, ctx context.Context) error {
 		return err
 	}
 
-	fmt.Fprintln(utils.Out, string(output[:])) //nolint:errcheck
+	if _, err = utils.Out.Write(output); err != nil {
+		return err
+	}
+	if _, err = utils.Out.Write([]byte("\n")); err != nil {
+		return err
+	}
 	return nil
 }
 
