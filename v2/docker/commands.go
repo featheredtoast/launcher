@@ -269,7 +269,7 @@ func (r *DockerPupsRunner) Run(ctx context.Context) error {
 	if len(r.SavedImageName) > 0 {
 		time.Sleep(utils.CommitWait)
 
-		cmd := exec.Command("docker",
+		cmd := exec.Command(utils.DockerPath,
 			"commit",
 			"--change",
 			"LABEL org.opencontainers.image.created=\""+time.Now().UTC().Format(time.RFC3339)+"\"",
